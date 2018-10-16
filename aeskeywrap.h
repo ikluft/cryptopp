@@ -108,13 +108,11 @@
 #ifndef AESKEYWRAP_H
 #define AESKEYWRAP_H
 
-// AesKeyWrap is written to use Crypto++ ( https://cryptopp.com/ )
-
-#include <cryptopp/cryptlib.h>	// base Crypto++ header
-#include <cryptopp/aes.h>		// AES encryption
-#include <cryptopp/stdcpp.h>	// includes C++ library headers
-#include <cryptopp/secblock.h>	// secure memory allocations & buffers
-#include <cryptopp/modes.h>		// for ECB_MODE electronic codebook mode of AES
+#include <cryptlib.h>	// base Crypto++ header
+#include <aes.h>		// AES encryption
+#include <stdcpp.h>	// includes C++ library headers
+#include <secblock.h>	// secure memory allocations & buffers
+#include <modes.h>		// for ECB_MODE electronic codebook mode of AES
 
 NAMESPACE_BEGIN(CryptoPP)
 

@@ -7,10 +7,10 @@
 
 #include <iostream>
 #include <sstream>
-#include <cryptopp/cryptlib.h>
-#include <cryptopp/secblock.h>
-#include <cryptopp/aes.h>
-#include <cryptopp/modes.h>
+#include <cryptlib.h>
+#include <secblock.h>
+#include <aes.h>
+#include <modes.h>
 #include "aeskeywrap.h"
 
 NAMESPACE_BEGIN(CryptoPP)
