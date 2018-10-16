@@ -7,6 +7,8 @@ adler32.h
 aes.h
 aes-armv4.h
 aes-armv4.S
+aeskeywrap.cpp
+aeskeywrap.h
 algebra.cpp
 algebra.h
 algparam.cpp
