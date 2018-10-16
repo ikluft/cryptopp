@@ -117,7 +117,7 @@
 NAMESPACE_BEGIN(CryptoPP)
 
 //! \brief AES Key Wrap wrapping/unwrapping and related utility functions
-class KeyWrap : public Algorithm {
+class AesKeyWrap : public Algorithm {
 	public:
 	// Crypto++ library algorithm declaration
 	std::string AlgorithmName() const {return "AES-KW";}

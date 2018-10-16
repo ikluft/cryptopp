@@ -74,15 +74,15 @@ static const char* initialValue5649 = "A65959A6"; // from RFC5649 Section 3
 // inputs: message plain text, key encryption key
 // outputs: cipher text
 // throws CryptoPP::Exception for errors
-void KeyWrap::wrap (
+void AesKeyWrap::wrap (
 	SecByteBlock plainTextIn,
 	SecByteBlock keyEncKeyIn,
 	SecByteBlock& cipherOut,
-	KeyWrap::KWSpec spec )
+	AesKeyWrap::KWSpec spec )
 {
 	// check parameters
 
-	if (spec==KeyWrap::RFC3394) {
+	if (spec==AesKeyWrap::RFC3394) {
 		// under RFC3394 plainTextIn must be a multiple of 8 bytes (64-bit blocks)
 		if (plainTextIn.size() % 8 != 0) {
 			throw CryptoPP::Exception(Exception::INVALID_ARGUMENT,
@@ -91,7 +91,7 @@ void KeyWrap::wrap (
 	}
 	unsigned long m = plainTextIn.size();
 	unsigned long n = m/8;
-	if (spec==KeyWrap::RFC5649) {
+	if (spec==AesKeyWrap::RFC5649) {
 		// under RFC5649 padding is added to make a multiple of 8 bytes (64-bit blocks)
 		if (m%8 != 0) {
 			// add 1 block for the missing fraction that was rounded down
@@ -121,7 +121,7 @@ void KeyWrap::wrap (
 
 	// set A = IV (initial value)
 	SecByteBlock a;
-	if (spec==KeyWrap::RFC3394) {
+	if (spec==AesKeyWrap::RFC3394) {
 		// RFC3394 initial value: 64-bit fixed value
 		a = hex2sbb(std::string(initialValue3394));
 	} else {
@@ -130,7 +130,7 @@ void KeyWrap::wrap (
 	}
 
 	// encrypt - either RFC5649 1-block special case or common normal case
-	if (spec==KeyWrap::RFC5649 && n==1) {
+	if (spec==AesKeyWrap::RFC5649 && n==1) {
 		// RFC5649 special case for 1-block key
 		// steps 2 & 3 abbreviated: C[0] | C[1] = ENC(K, A | P[1])
 #if !defined(NDEBUG) && EXTRADEBUG>1
@@ -235,19 +235,20 @@ void KeyWrap::wrap (
 //        Return an error
 
 // Note that this code does not err on the side of convenience.
-// The correct wrapping spec (KeyWrap::RFC3394 or KeyWrap::RFC5649) must be used to correctly decrypt a wrapped key.
-// Though it is possible for the code to offer some help by recognizing the initial value and selecting the correct
-// algorithm, that may give too much information to a potential attacker. No such convenience is offered here.
+// The correct wrapping spec (AesKeyWrap::RFC3394 or AesKeyWrap::RFC5649) must be used to correctly decrypt a
+// wrapped key.  Though it is possible for the code to offer some help by recognizing the initial value and
+// selecting the correct algorithm, that may give too much information to a potential attacker. No such convenience
+// is offered here.
 
 // RFC3394/RFC5649 key unwrap
 // inputs: cipher text, key encryption key
 // outputs: message plain text
 // throws CryptoPP::Exception for errors
-void KeyWrap::unwrap (
+void AesKeyWrap::unwrap (
 	SecByteBlock cipherTextIn,
 	SecByteBlock keyEncKeyIn,
 	SecByteBlock& plainTextOut,
-	KeyWrap::KWSpec spec )
+	AesKeyWrap::KWSpec spec )
 {
 	// check parameters
 
@@ -267,7 +268,7 @@ void KeyWrap::unwrap (
 	// decrypt - either RFC5649 1-block special case or common normal case
 	SecByteBlock	a;
 	std::vector<SecByteBlock>	r;	// r[] starts from 0 so use i-1 index compared with R[] in algorithm
-	if (spec==KeyWrap::RFC5649 && n==1) {
+	if (spec==AesKeyWrap::RFC5649 && n==1) {
 		// RFC5649 special case for 1-block key
 		// abbreviated steps 2 & 3: A | P[1] = DEC(K, C[0] | C[1])
 		SecByteBlock	p;
@@ -367,7 +368,7 @@ void KeyWrap::unwrap (
 	// RFC3394 uses fixed 64-bit value; RFC5649 uses fixed 32-bit value and 32-bit length
 	std::string aHex;
 	unsigned long length = 0;
-	if (spec==KeyWrap::RFC3394) {
+	if (spec==AesKeyWrap::RFC3394) {
 		aHex = sbb2hex(a);
 	} else {
 		aHex = sbb2hex(SecByteBlock(a.data(), 4));
@@ -378,8 +379,8 @@ void KeyWrap::unwrap (
 #endif
 
 	// throw exception if integrity check failed (wrong KEK)
-	if ((spec==KeyWrap::RFC3394 && aHex!=initialValue3394)
-		|| (spec==KeyWrap::RFC5649 && aHex!=initialValue5649))
+	if ((spec==AesKeyWrap::RFC3394 && aHex!=initialValue3394)
+		|| (spec==AesKeyWrap::RFC5649 && aHex!=initialValue5649))
 	{
 		// throw exception
 		// note: by definition no decryption results are returned on failure - see RFC3394 or AES-KW spec
@@ -387,7 +388,7 @@ void KeyWrap::unwrap (
 	}
 
 	// for RFC5649, check message length is valid (fits within received cipher length)
-	if (spec==KeyWrap::RFC5649) {
+	if (spec==AesKeyWrap::RFC5649) {
 		if ( length > n*8) {
 			throw CryptoPP::Exception(Exception::DATA_INTEGRITY_CHECK_FAILED, "message too long");
 		}
@@ -402,14 +403,14 @@ void KeyWrap::unwrap (
 	for (i=1; i<=n; i++ ) {
 		plainTextOut += r[i-1]; // append to the result SecByteBlock
 	}
-	if (spec==KeyWrap::RFC5649) {
+	if (spec==AesKeyWrap::RFC5649) {
 		// resize buffer to the specified message length
 		plainTextOut.resize(length);
 	}
 }
 
 // convert a 32-bit integer to a SecByteBlock
-SecByteBlock KeyWrap::word2sbb(word64 wordIn)
+SecByteBlock AesKeyWrap::word2sbb(word64 wordIn)
 {
 	SecByteBlock result(4);
 	byte	*ptr = result.data();
@@ -421,7 +422,7 @@ SecByteBlock KeyWrap::word2sbb(word64 wordIn)
 }
 
 // AES electronic codebook (ECB) encryption
-void KeyWrap::encryptAES(SecByteBlock key, SecByteBlock plainIn, SecByteBlock &cipherOut )
+void AesKeyWrap::encryptAES(SecByteBlock key, SecByteBlock plainIn, SecByteBlock &cipherOut )
 {
 	ECB_Mode< AES >::Encryption e;
     e.SetKey(key, key.size());
@@ -430,7 +431,7 @@ void KeyWrap::encryptAES(SecByteBlock key, SecByteBlock plainIn, SecByteBlock &c
 }
 
 // AES electronic codebook (ECB) decryption
-void KeyWrap::decryptAES(SecByteBlock key, SecByteBlock cipherIn, SecByteBlock &plainOut )
+void AesKeyWrap::decryptAES(SecByteBlock key, SecByteBlock cipherIn, SecByteBlock &plainOut )
 {
 	ECB_Mode< AES >::Decryption e;
     e.SetKey(key, key.size());
@@ -440,7 +441,7 @@ void KeyWrap::decryptAES(SecByteBlock key, SecByteBlock cipherIn, SecByteBlock &
 
 // convert hex digit to 4-bit integer
 // for testing and debug output
-int KeyWrap::hexdigit2int(char hexdigit)
+int AesKeyWrap::hexdigit2int(char hexdigit)
 {
 	if (hexdigit>='0' && hexdigit<='9') {
 		return hexdigit - '0';
@@ -456,7 +457,7 @@ int KeyWrap::hexdigit2int(char hexdigit)
 
 // convert a string of hexadecimal digits to a SecByteBlock to feed the tests
 // for testing and debug output
-SecByteBlock KeyWrap::hex2sbb(const std::string &hex)
+SecByteBlock AesKeyWrap::hex2sbb(const std::string &hex)
 {
 	int length = hex.size();
 	if (length%2 != 0) {
@@ -478,7 +479,7 @@ SecByteBlock KeyWrap::hex2sbb(const std::string &hex)
 
 // convert a SecByteBlock to a string of hexadecimal digits to check test results
 // for testing and debug output
-std::string KeyWrap::sbb2hex(const SecByteBlock &sbb)
+std::string AesKeyWrap::sbb2hex(const SecByteBlock &sbb)
 {
 	static const std::string hexdigits = "0123456789ABCDEF";
 	std::string result;
